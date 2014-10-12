@@ -5,9 +5,9 @@ import com.rabbitmq.client.DefaultConsumer;
 
 import java.io.IOException;
 
-public class MyConsumer extends DefaultConsumer {
+public class MyQueueConsumer extends DefaultConsumer {
 
-    public MyConsumer(Channel channel) {
+    public MyQueueConsumer(Channel channel) {
         super(channel);
     }
 
