@@ -24,7 +24,7 @@ public class NotificationTrace<T> {
         Timeout timeout = new Timeout(timeoutMs);
 
         synchronized (traceLock) {
-            NotificationStream<T> stream = new NotificationStream(trace, criteria);
+            NotificationStream<T> stream = new NotificationStream<>(trace, criteria);
 
             while (!stream.hasMatched()) {
                 if(timeout.hasTimedOut()) {

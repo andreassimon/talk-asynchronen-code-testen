@@ -11,8 +11,10 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,6 +22,8 @@ import static org.junit.Assert.fail;
 public class SingleAsyncTest {
 
 
+    public static final int MIN = 30;
+    public static final int MAX = 40;
     private Connection connection;
     private Channel channel;
     private String queueName;
@@ -29,7 +33,7 @@ public class SingleAsyncTest {
         ExecutorService es = Executors.newFixedThreadPool(5);
 
         ConnectionFactory connectionFactory = new ConnectionFactory();
-        Connection connection = connectionFactory.newConnection(es);
+        connection = connectionFactory.newConnection(es);
         channel = connection.createChannel();
         queueName = channel.queueDeclare().getQueue();
     }
@@ -37,30 +41,30 @@ public class SingleAsyncTest {
     @Test public void
     should_answer() throws Exception {
         //Arrange
-        final CountDownLatch latch = new CountDownLatch(10);
+        final CountDownLatch latch = new CountDownLatch(MAX-MIN);
 
-        Arrays.asList("Consumer 1", "Consumer 2", "Consumer 3").forEach( c -> {
-            try {
-                new MyQueueConsumer(connection.createChannel()) {
-                    @Override
-                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        final int i = Integer.parseInt(new String(body));
-                        println(" [" + c + " @" + Thread.currentThread().getName() + "] " + fib(i));
-                        latch.countDown();
-                    }
+        try {
+            new MyQueueConsumer(connection.createChannel()) {
+                AtomicInteger expected = new AtomicInteger(MIN+1);
 
-                    private int fib(int n) {
-                        if(n < 2) return n;
-                        return fib(n-2) + fib(n-1);
-                    }
-                }.consumeQueue(queueName);
-            } catch(IOException e) {
-                fail();
-            }
-        });
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    final int payload = Integer.parseInt(new String(body));
+                    assertEquals(expected.getAndIncrement(), payload);
+                    latch.countDown();
+                }
+
+                private int fib(int n) {
+                    if(n < 2) return n;
+                    return fib(n-2) + fib(n-1);
+                }
+            }.consumeQueue(queueName);
+        } catch(IOException e) {
+            fail();
+        }
 
         // Act
-        publishNumbers(30, 40);
+        publishNumbers(MIN, MAX);
 
         // Assert
         assertTrue("Did not complete within timeout", latch.await(30000, MILLISECONDS));
