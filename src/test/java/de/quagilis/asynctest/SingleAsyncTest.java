@@ -48,9 +48,8 @@ public class SingleAsyncTest {
                 AtomicInteger expected = new AtomicInteger(MIN+1);
 
                 @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                    final int payload = Integer.parseInt(new String(body));
-                    assertEquals(expected.getAndIncrement(), payload);
+                public void process(int next) {
+                    assertEquals(expected.getAndIncrement(), next);
                     latch.countDown();
                 }
 
@@ -67,7 +66,7 @@ public class SingleAsyncTest {
         publishNumbers(MIN, MAX);
 
         // Assert
-        assertTrue("Did not complete within timeout", latch.await(30000, MILLISECONDS));
+        assertTrue("Did not succeed within timeout", latch.await(2000, MILLISECONDS));
     }
 
     public void publishNumbers(int min, int max) {
