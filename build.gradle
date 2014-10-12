@@ -1,5 +1,25 @@
+apply plugin: 'idea'
 apply plugin: 'java'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.rabbitmq:amqp-client:3.3.+'
+
+    testCompile 'junit:junit:4.11'
+}
+
+idea.module {
+    downloadJavadoc = true
+    downloadSources = true
 }
