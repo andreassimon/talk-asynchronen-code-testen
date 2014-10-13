@@ -19,13 +19,13 @@ function fib(n, fn) {
 }
 
 app.post('/', function(req, res) {
-  var n = req.param('n');
+  var n = parseFloat(req.param('n'));
   fibs[n] = undefined;
   setImmediate(function () {
-    console.log('Calculating fib(' + n + ')');
+    console.log('Calculating fib(%d)', n);
     fib(n, function(fibN) {
       fibs[n] = fibN;
-      console.log('Calculated fib(' + n + ')=' + fibs[n]); 
+      console.log('Calculated fib(%d)=%d', n, fibs[n]);
     });
   });
 
@@ -36,12 +36,13 @@ app.post('/', function(req, res) {
 });
 
 app.get('/:n', function(req, res) {
-  if(fibs[req.param('n')]) {
+  var fibN = fibs[req.param('n')];
+  if(fibN) {
     return res
       .status(200)
       .end('' + fibs[req.param('n')]);
   }
-  console.log('fib(' + req.param('n') + ') NOT FOUND');
+  console.log('fib(%d) = %s', req.param('n'), fibN);
   res
     .status(404)
     .end();

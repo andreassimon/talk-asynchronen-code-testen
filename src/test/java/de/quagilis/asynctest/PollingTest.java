@@ -1,13 +1,15 @@
 package de.quagilis.asynctest;
 
 
+import book.example.async.polling.Poller;
+import book.example.async.polling.Probe;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -25,13 +27,54 @@ public class PollingTest {
     public static final String FORM_URL_ENCODED = "application/x-www-form-urlencoded;charset=" + UTF_8;
 
 
+
     @Test
     public void calculates_fib_30() throws Exception {
-        HttpURLConnection connection = POST("http://localhost:3000/", MAX);
+        // Arrange
+        Poller poller = new Poller(10000, 200);
 
+        // Act
+        HttpURLConnection connection = POST("http://localhost:3000/", MIN);
         String fibLocation = connection.getHeaderField("Location");
 
-        assertThat(GET(fibLocation), equalTo(Integer.toString(FIB_MAX)));
+        // Assert
+        poller.check(responseTo(fibLocation, equalTo(Integer.toString(FIB_MIN))));
+    }
+
+    public Probe responseTo(final String fibLocation, final Matcher<String> matcher) {
+        return new Probe() {
+
+            private String lastResponse = "";
+
+            @Override
+            public boolean isSatisfied() {
+                return matcher.matches(lastResponse);
+            }
+
+            @Override
+            public void sample() {
+                try {
+                    lastResponse = GET(fibLocation);
+                } catch (IOException e) {
+                    lastResponse = e.toString();
+                }
+            }
+
+            @Override
+            public void describeAcceptanceCriteriaTo(Description d) {
+                d.appendText("GET ")
+                 .appendValue(fibLocation)
+                 .appendText(" responds with ")
+                 .appendDescriptionOf(matcher);
+            }
+
+            @Override
+            public void describeFailureTo(Description d) {
+                d.appendText("last response was ")
+                 .appendValue(lastResponse);
+
+            }
+        };
     }
 
     private String GET(String url) throws IOException {
