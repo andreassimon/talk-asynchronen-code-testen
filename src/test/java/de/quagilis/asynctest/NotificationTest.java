@@ -3,7 +3,6 @@ package de.quagilis.asynctest;
 import com.rabbitmq.client.*;
 import de.quagilis.amqp.AMQPConstants;
 import de.quagilis.amqp.FibonacciCalculator;
-import de.quagilis.amqp.MyQueueConsumer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
-public class SingleAsyncTest {
+public class NotificationTest {
 
 
     public static final int MIN = 30;
@@ -26,7 +25,7 @@ public class SingleAsyncTest {
     public static final int FIB_MIN = 832040;
     public static final int FIB_MAX = 102334155;
 
-    public static final long TIMEOUT = 10000; // Milliseconds
+    public static final long TIMEOUT = 2000; // Milliseconds
 
     private Connection connection;
     private Channel channel;
@@ -43,19 +42,16 @@ public class SingleAsyncTest {
     }
 
     @Test public void
-    should_answer() throws Exception {
+    should_reply_with_Fibonacci_numbers() throws Exception {
         // Arrange
         NotificationTrace<Integer> trace = new NotificationTrace<>(TIMEOUT);
         String replyQueue = channel.queueDeclare().getQueue();
         new FibonacciCalculator(connection.createChannel()).consumeQueue(fibonacciQueueName);
 
-        new MyQueueConsumer(connection.createChannel()) {
+        new IntegerConsumer(connection.createChannel()) {
             @Override
-            public int process(int next) {
-                print("   < ");
-                println(next);
+            public void process(int next) {
                 trace.append(next);
-                return next;
             }
         }.consumeQueue(replyQueue);
 
@@ -75,22 +71,12 @@ public class SingleAsyncTest {
     }
 
     public void publishNumber(int number, Channel _channel, String replyQueue) throws IOException {
-        try {
-            System.out.printf(" Publishing '%d' and reply to '%s'\n", number, replyQueue);
-            _channel.basicPublish(AMQPConstants.DEFAULT_EXCHANGE, fibonacciQueueName,
-//                    new AMQP.BasicProperties.Builder().build(),
-                    new AMQP.BasicProperties.Builder().replyTo(replyQueue).build(),
-                    Integer.toString(number).getBytes());
-        } catch(IOException e) {
-            fail();
-        }
+        _channel.basicPublish(
+            AMQPConstants.DEFAULT_EXCHANGE,
+            fibonacciQueueName,
+            new AMQP.BasicProperties.Builder().replyTo(replyQueue).build(),
+            Integer.toString(number).getBytes()
+        );
     }
 
-    private void print(final String s) {
-        System.out.print(s);
-    }
-
-    private void println(int n) {
-        System.out.println(n);
-    }
 }

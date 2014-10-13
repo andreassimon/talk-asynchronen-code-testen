@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -25,15 +26,15 @@ public class AMQPConstants {
      */
     public static final boolean ALWAYS = false;
 
-    public static final Map<String, Object> NO_ADDITIONAL_ARGUMENTS = null;
-//    public static final Map<String, Object> DEFAULT_AMQP_CLIENT_PROPERTIES = [
-//            host: 'localhost',
-//            virtualHost: '/',
-//            port: 5672,
-//            username: 'guest',
-//            password: 'guest',
-//            requestedHeartbeat: 0
-//    ]
+    public static final Map<String, ?> NO_ADDITIONAL_ARGUMENTS = null;
+    public static final Map<String, ?> DEFAULT_AMQP_CLIENT_PROPERTIES = new HashMap<String, Object>() {{
+        put("host", "localhost");
+        put("virtualHost", "/");
+        put("port", 5672);
+        put("username", "guest");
+        put("password", "guest");
+        put("requestedHeartbeat", 0);
+    }};
 
     public static final boolean AUTO_ACK = true;
     public static final boolean NO_AUTO_ACK = false;
@@ -54,16 +55,5 @@ public class AMQPConstants {
 
 
     public static final com.rabbitmq.client.AMQP.BasicProperties NO_PROPERTIES = null;
-
-    public static com.rabbitmq.client.AMQP.BasicProperties replyTo(String queueName) {
-        return new com.rabbitmq.client.AMQP.BasicProperties().builder().replyTo(queueName).build();
-    }
-
-    public static String consumeQueue(final Channel channel, final Consumer consumer) throws IOException {
-        com.rabbitmq.client.AMQP.Queue.DeclareOk declareOk = channel.queueDeclare();
-        String queueName = declareOk.getQueue();
-        channel.basicConsume(queueName, NO_AUTO_ACK, consumer);
-        return queueName;
-    }
 
 }

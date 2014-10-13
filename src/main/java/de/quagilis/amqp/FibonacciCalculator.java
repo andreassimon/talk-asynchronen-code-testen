@@ -2,20 +2,39 @@ package de.quagilis.amqp;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import java.io.IOException;
 
-public class FibonacciCalculator extends MyQueueConsumer {
+public class FibonacciCalculator extends DefaultConsumer {
+
 
     public FibonacciCalculator(Channel channel) {
         super(channel);
     }
 
+    public void consumeQueue(String queueName) throws IOException {
+        getChannel().basicConsume(queueName, AMQPConstants.AUTO_ACK, this);
+    }
+
     @Override
-    public int process(int n) {
-        System.out.printf("fib(%d) = %d\n", n, fib(n));
-        return fib(n);
+    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+        int n = Integer.parseInt(new String(body));
+        int result = fib(n);
+        String replyTo = properties.getReplyTo();
+        if(null != replyTo) {
+            publishNumber(result, replyTo);
+        }
+    }
+
+    public void publishNumber(int number, String queueName) throws IOException {
+        getChannel().basicPublish(
+            AMQPConstants.DEFAULT_EXCHANGE,
+            queueName,
+            AMQPConstants.NO_PROPERTIES,
+            Integer.toString(number).getBytes()
+        );
     }
 
     protected int fib(int n) {
