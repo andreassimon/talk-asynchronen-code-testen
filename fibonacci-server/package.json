@@ -1,0 +1,19 @@
+{
+  "name": "Fibonacci-Server",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andreassimon/talk-asynchronen-code-testen.git"
+  },
+  "author": "Andreas Simon",
+  "license": "Apache",
+  "bugs": {
+    "url": "https://github.com/andreassimon/talk-asynchronen-code-testen/issues"
+  },
+  "homepage": "https://github.com/andreassimon/talk-asynchronen-code-testen"
+}
