@@ -6,27 +6,38 @@ app.use(require('body-parser')());
 
 var fibs = { };
 
-function fib(n, fn) {
+function fibRec(n, fn) {
   if(n < 2) {
     setImmediate(fn, n);
   } else {
-    fib(n-2, function(n2) {
-      fib(n-1, function(n1) {
+    fibRec(n-2, function(n2) {
+      fibRec(n-1, function(n1) {
         fn(n2+n1);
       });
     });
   }
 }
 
+function fibLin(n, fn) {
+  function fl(n2, n1, n0, _fn) {
+    if(n0 == 0) {
+      return _fn(n2);
+    }
+    setImmediate(fl, n1, n2+n1, n0-1, _fn);
+  }
+
+  setImmediate(fl, 0, 1, n, fn);
+}
+
+var fib = fibRec;
+
 app.post('/', function(req, res) {
   var n = parseFloat(req.param('n'));
   fibs[n] = undefined;
-  setImmediate(function () {
-    console.log('Calculating fib(%d)', n);
-    fib(n, function(fibN) {
-      fibs[n] = fibN;
-      console.log('Calculated fib(%d)=%d', n, fibs[n]);
-    });
+  console.log('Calculating fib(%d)', n);
+  fib(n, function(fibN) {
+    fibs[n] = fibN;
+    console.log('Calculated fib(%d)=%d', n, fibs[n]);
   });
 
   res
