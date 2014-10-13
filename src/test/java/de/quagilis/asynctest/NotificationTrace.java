@@ -1,17 +1,23 @@
 package de.quagilis.asynctest;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.StringDescription;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * From Growing Object-Oriented Software by Nat Pryce and Steve Freeman
+ * From "Growing Object-Oriented Software" by Nat Pryce and Steve Freeman
  */
 public class NotificationTrace<T> {
     private final Object traceLock = new Object();
     private final List<T> trace = new ArrayList<>();
     private long timeoutMs;
+
+    public NotificationTrace(long timeoutMs) {
+        this.timeoutMs = timeoutMs;
+    }
 
     public void append(T message) {
         synchronized (traceLock) {
@@ -35,8 +41,17 @@ public class NotificationTrace<T> {
         }
     }
 
-    private String failureDescriptionFrom(Matcher<? super T> criteria) {
-        return "Did not match";
+    private String failureDescriptionFrom(Matcher<? super T> acceptanceCriteria) {
+        StringDescription description = new StringDescription();
+        description.appendText("no message matching ")
+                .appendDescriptionOf(acceptanceCriteria)
+                .appendText(" received within " + timeoutMs + "ms\n");
+        if (trace.isEmpty()) {
+            description.appendText("received nothing");
+        } else {
+            description.appendValueList("received:\n ", "\n ", "", trace);
+        }
+        return description.toString();
     }
 
     private static class NotificationStream<N> {
