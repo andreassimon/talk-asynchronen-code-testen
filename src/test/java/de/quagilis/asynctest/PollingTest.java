@@ -18,10 +18,10 @@ import static org.junit.Assert.assertThat;
 public class PollingTest {
 
     public static final int MIN = 30;
-    public static final int MAX = 40;
+    public static final int MAX = 33;
 
     public static final int FIB_MIN = 832040;
-    public static final int FIB_MAX = 102334155;
+    public static final int FIB_MAX = 3524578;
 
     public static final String UTF_8 = "UTF-8";
     public static final String FORM_URL_ENCODED = "application/x-www-form-urlencoded;charset=" + UTF_8;
@@ -40,6 +40,20 @@ public class PollingTest {
         // Assert
         poller.check(responseTo(fibLocation, equalTo(Integer.toString(FIB_MIN))));
     }
+
+    @Test
+    public void calculates_fib_33() throws Exception {
+        // Arrange
+        Poller poller = new Poller(20000, 200);
+
+        // Act
+        HttpURLConnection connection = POST("http://localhost:3000/", MAX);
+        String fibLocation = connection.getHeaderField("Location");
+
+        // Assert
+        poller.check(responseTo(fibLocation, equalTo(Integer.toString(FIB_MAX))));
+    }
+
 
     public Probe responseTo(final String fibLocation, final Matcher<String> matcher) {
         return new Probe() {
@@ -72,7 +86,6 @@ public class PollingTest {
             public void describeFailureTo(Description d) {
                 d.appendText("last response was ")
                  .appendValue(lastResponse);
-
             }
         };
     }
