@@ -40,22 +40,25 @@ public class NotificationTest {
         channel = connection.createChannel();
     }
 
-    @Test public void
-    should_reply_with_Fibonacci_numbers() throws Exception {
-        // Arrange
-        NotificationTrace<Integer> trace = new NotificationTrace<>(TIMEOUT);
-        String replyQueue = channel.queueDeclare().getQueue();
-        FibonacciCalculator.create(connection.createChannel());
+  @Test public void
+  should_reply_with_Fibonacci_numbers() throws Exception {
+    // Arrange
+    NotificationTrace<Integer> trace = new NotificationTrace<>(TIMEOUT);
+    String replyQueue = channel.queueDeclare().getQueue();
+    FibonacciCalculator.create(connection.createChannel());
 
-        new IntegerConsumer(connection.createChannel(), trace::append).consumeQueue(replyQueue);
+    new IntegerConsumer(
+      connection.createChannel(),
+      trace::append)
+    .consumeQueue(replyQueue);
 
-        // Act
-        publishNumbers(MIN, MAX, replyQueue);
+    // Act
+    publishNumbers(MIN, MAX, replyQueue);
 
-        // Assert
-        trace.containsNotification(equalTo(FIB_MIN));
-        trace.containsNotification(equalTo(FIB_MAX));
-    }
+    // Assert
+    trace.containsNotification(equalTo(FIB_MIN));
+    trace.containsNotification(equalTo(FIB_MAX));
+  }
 
 
     public void publishNumbers(int min, int max, String queue) throws IOException {

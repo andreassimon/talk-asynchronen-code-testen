@@ -10,24 +10,22 @@ var FIB_MAX = '102334155';
 
 describe('AMQP Fibonacci service', function() {
   it('calculates fib(' + MIN + ')', function(done) {
-    // Wait for connection to become established.
     connection.on('ready', function () {
-
-      // Use the default 'amq.topic' exchange
       connection.queue('my-queue', function(q) {
-          // Catch all messages
-          q.bind('#');
+        // Catch all messages
+        q.bind('#');
 
-          // Receive messages
-          q.subscribe(function (message) {
-            try {
-              message.data.toString().should.eql(FIB_MIN);
-              done();
-            } catch(e) {
-              done(e);
-            }
-          });
+        q.subscribe(function (message) {
+          try {
+            // Assert
+            message.data.toString().should.eql(FIB_MIN);
+            done();
+          } catch(e) {
+            done(e);
+          }
+        });
 
+        // Act
         connection.publish('calculate-fibonacci', MIN, { replyTo: 'my-queue'});
       });
     });

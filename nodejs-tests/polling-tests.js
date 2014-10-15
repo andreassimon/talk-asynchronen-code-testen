@@ -1,73 +1,62 @@
 var http = require('http');
 var should = require('should');
 
-var options = {
+var POST_fib = {
   hostname: 'localhost',
   port: 3000,
   path: '/',
   method: 'POST'
 };
+var POLL_DELAY = 100;
+
+function pollGET(url, done) {
+  http.get(url, function(res) {
+    if(200 != res.statusCode) {
+      setTimeout(pollGET, POLL_DELAY, url, done);
+    }
+    res.on('data', function (chunk) {
+      chunk.toString().should.eql('6765');
+      done();
+    });
+  }).on('error', done);
+}
 
 describe('Fibonacci server', function() {
   it('should calculate fib(20)', function(done) {
-    var req = http.request(options, function(res) {
+    var req = http.request(POST_fib, function(res) {
       res.setEncoding('utf8');
-      var location = res.headers.location;
-
       res.statusCode.should.eql(201);
-      location.should.be.ok;
-
-      function GET(loc) {
-        http.get(location, function(res) {
-          if(200 != res.statusCode) {
-            setTimeout(GET, loc, 100);
-          }
-          res.on('data', function (chunk) {
-            chunk.toString().should.eql('6765');
-            done();
-          });
-        }).on('error', function(e) {
-          console.log("Got error: " + e.message);
-        });
-      }
-
-      GET(location);
-    }).on('error', function(e) {
-      console.log('problem with request: ' + e.message);
-    });
+      res.headers.location.should.be.ok;
+      pollGET(res.headers.location, done);
+    }).on('error', done);
 
     req.setHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
-    // write data to request body
     req.write('n=20\n');
     req.end();
   });
 
   it('should calculate fib(30)', function(done) {
-    var req = http.request(options, function(res) {
+    var req = http.request(POST_fib, function(res) {
       res.setEncoding('utf8');
       var location = res.headers.location;
 
       res.statusCode.should.eql(201);
       location.should.be.ok;
 
-      function GET(loc) {
-        http.get(location, function(res) {
+      function GET(url) {
+        http.get(url, function(res) {
           if(200 != res.statusCode) {
-            setTimeout(GET, loc, 100);
+            setTimeout(GET, POLL_DELAY, url);
           }
           res.on('data', function (chunk) {
             chunk.toString().should.eql('832040');
             done();
           });
-        }).on('error', function(e) {
-          console.log("Got error: " + e.message);
-        });
+        }).on('error', done);
       }
 
       GET(location);
-    }).on('error', function(e) {
-      console.log('problem with request: ' + e.message);
-    });
+    }).on('error', done);
 
     req.setHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
     // write data to request body
