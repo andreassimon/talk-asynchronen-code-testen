@@ -53,6 +53,10 @@ public class Poller {
     }
 
     public static void assertEventually(Probe probe) throws InterruptedException {
-        new Poller(1000L, 100L).check(probe);
+        assertEventually(probe, 1000L);
+    }
+
+    public static void assertEventually(Probe probe, long timeoutMillis) throws InterruptedException {
+        new Poller(timeoutMillis, 100L).check(probe);
     }
 }

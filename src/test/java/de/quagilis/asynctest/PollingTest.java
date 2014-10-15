@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static book.example.async.polling.Poller.assertEventually;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -25,33 +26,27 @@ public class PollingTest {
 
     public static final String UTF_8 = "UTF-8";
     public static final String FORM_URL_ENCODED = "application/x-www-form-urlencoded;charset=" + UTF_8;
+    public static final long LONG_TIMEOUT = 10000L;
 
 
-
-    @Test
-    public void calculates_fib_30() throws Exception {
-        // Arrange
-        Poller poller = new Poller(10000, 200);
-
+    @Test public void
+    calculates_fib_30() throws Exception {
         // Act
         HttpURLConnection connection = POST("http://localhost:3000/", MIN);
         String fibLocation = connection.getHeaderField("Location");
 
         // Assert
-        poller.check(responseTo(fibLocation, equalTo(Integer.toString(FIB_MIN))));
+        assertEventually(responseTo(fibLocation, equalTo(Integer.toString(FIB_MIN))), LONG_TIMEOUT);
     }
 
-    @Test
-    public void calculates_fib_33() throws Exception {
-        // Arrange
-        Poller poller = new Poller(20000, 200);
-
+    @Test public void
+    calculates_fib_33() throws Exception {
         // Act
         HttpURLConnection connection = POST("http://localhost:3000/", MAX);
         String fibLocation = connection.getHeaderField("Location");
 
         // Assert
-        poller.check(responseTo(fibLocation, equalTo(Integer.toString(FIB_MAX))));
+        assertEventually(responseTo(fibLocation, equalTo(Integer.toString(FIB_MAX))), LONG_TIMEOUT);
     }
 
 
