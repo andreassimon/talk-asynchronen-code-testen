@@ -7,10 +7,18 @@ import org.hamcrest.StringDescription;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * From "Growing Object-Oriented Software" by Nat Pryce and Steve Freeman
+ */
 public class NotificationTrace<T> {
     private final Object traceLock = new Object();
     private final List<T> trace = new ArrayList<T>();
     private long timeoutMs = 1000L;
+
+    public NotificationTrace(long timeoutMs) {
+        setTimeout(timeoutMs);
+    }
 
     public long getTimeout() {
         return timeoutMs;
@@ -32,7 +40,7 @@ public class NotificationTrace<T> {
         Timeout timeout = new Timeout(timeoutMs);
 
         synchronized (traceLock) {
-            NotificationStream<T> stream = new NotificationStream<T>(trace, criteria);
+            NotificationStream<T> stream = new NotificationStream<>(trace, criteria);
 
             while (!stream.hasMatched()) {
                 if (timeout.hasTimedOut()) {

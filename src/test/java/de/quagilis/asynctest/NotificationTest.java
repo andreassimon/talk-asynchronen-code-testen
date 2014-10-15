@@ -1,5 +1,6 @@
 package de.quagilis.asynctest;
 
+import book.example.async.notifications.NotificationTrace;
 import com.rabbitmq.client.*;
 import de.quagilis.amqp.AMQPConstants;
 import de.quagilis.amqp.FibonacciCalculator;
@@ -46,12 +47,7 @@ public class NotificationTest {
         String replyQueue = channel.queueDeclare().getQueue();
         FibonacciCalculator.create(connection.createChannel());
 
-        new IntegerConsumer(connection.createChannel()) {
-            @Override
-            public void process(int next) {
-                trace.append(next);
-            }
-        }.consumeQueue(replyQueue);
+        new IntegerConsumer(connection.createChannel(), trace::append).consumeQueue(replyQueue);
 
         // Act
         publishNumbers(MIN, MAX, replyQueue);

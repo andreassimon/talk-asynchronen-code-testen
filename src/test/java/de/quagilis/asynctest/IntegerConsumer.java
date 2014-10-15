@@ -7,11 +7,15 @@ import com.rabbitmq.client.Envelope;
 import de.quagilis.amqp.AMQPConstants;
 
 import java.io.IOException;
+import java.util.function.IntConsumer;
 
-public abstract class IntegerConsumer extends DefaultConsumer {
+public class IntegerConsumer extends DefaultConsumer {
 
-    public IntegerConsumer(Channel channel) {
+    private IntConsumer consumer;
+
+    public IntegerConsumer(Channel channel, IntConsumer consumer) {
         super(channel);
+        this.consumer = consumer;
     }
 
     public void consumeQueue(String queueName) throws IOException {
@@ -20,9 +24,7 @@ public abstract class IntegerConsumer extends DefaultConsumer {
 
     @Override
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-        process(Integer.parseInt(new String(body)));
+        consumer.accept(Integer.parseInt(new String(body)));
     }
-
-    protected abstract void process(int payload);
 
 }
