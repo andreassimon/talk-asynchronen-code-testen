@@ -1,14 +1,17 @@
 var amqp = require('amqp');
+var should = require('should');
 
 var connection = amqp.createConnection({ host: 'localhost' });
 
-var FIB_MIN = 832040;
+var MIN = '30';
+var MAX = '40';
+var FIB_MIN = '832040';
+var FIB_MAX = '102334155';
 
 describe('AMQP Fibonacci service', function() {
-  it('calculates fib(30)', function(done) {
+  it('calculates fib(' + MIN + ')', function(done) {
     // Wait for connection to become established.
     connection.on('ready', function () {
-      console.log('AMQP connection is ready');
 
       // Use the default 'amq.topic' exchange
       connection.queue('my-queue', function(q) {
@@ -17,19 +20,39 @@ describe('AMQP Fibonacci service', function() {
 
           // Receive messages
           q.subscribe(function (message) {
-            // Print messages to stdout
-            // require('inspect')(message.data);
-            console.log(message.data.toString());
-            console.log(message);
-            // console.log(assertEquals);
-            // assertEquals(FIB_MIN, message.data.toString());
-            done();
+            try {
+              message.data.toString().should.eql(FIB_MIN);
+              done();
+            } catch(e) {
+              done(e);
+            }
           });
 
-        connection.publish('calculate-fibonacci', '30', { replyTo: 'my-queue'}, function() {
-          console.log('Message published');
-        });
+        connection.publish('calculate-fibonacci', MIN, { replyTo: 'my-queue'});
+      });
+    });
+  });
 
+  it('calculates fib(' + MAX + ')', function(done) {
+    // Wait for connection to become established.
+    connection.on('ready', function () {
+
+      // Use the default 'amq.topic' exchange
+      connection.queue('my-queue', function(q) {
+          // Catch all messages
+          q.bind('#');
+
+          // Receive messages
+          q.subscribe(function (message) {
+            try {
+              message.data.toString().should.eql(FIB_MAX);
+              done();
+            } catch(e) {
+              done(e);
+            }
+          });
+
+        connection.publish('calculate-fibonacci', MAX, { replyTo: 'my-queue'});
       });
     });
   });
