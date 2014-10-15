@@ -26,7 +26,7 @@ public class AMQPConstants {
      */
     public static final boolean ALWAYS = false;
 
-    public static final Map<String, ?> NO_ADDITIONAL_ARGUMENTS = null;
+    public static final Map<String, Object> NO_ADDITIONAL_ARGUMENTS = null;
     public static final Map<String, ?> DEFAULT_AMQP_CLIENT_PROPERTIES = new HashMap<String, Object>() {{
         put("host", "localhost");
         put("virtualHost", "/");

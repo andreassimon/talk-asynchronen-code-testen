@@ -29,7 +29,6 @@ public class NotificationTest {
 
     private Connection connection;
     private Channel channel;
-    private String fibonacciQueueName;
 
     @Before
     public void setUp() throws IOException {
@@ -38,7 +37,6 @@ public class NotificationTest {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         connection = connectionFactory.newConnection(es);
         channel = connection.createChannel();
-        fibonacciQueueName = channel.queueDeclare().getQueue();
     }
 
     @Test public void
@@ -46,7 +44,7 @@ public class NotificationTest {
         // Arrange
         NotificationTrace<Integer> trace = new NotificationTrace<>(TIMEOUT);
         String replyQueue = channel.queueDeclare().getQueue();
-        new FibonacciCalculator(connection.createChannel()).consumeQueue(fibonacciQueueName);
+        FibonacciCalculator.create(connection.createChannel());
 
         new IntegerConsumer(connection.createChannel()) {
             @Override
@@ -73,7 +71,7 @@ public class NotificationTest {
     public void publishNumber(int number, Channel _channel, String replyQueue) throws IOException {
         _channel.basicPublish(
             AMQPConstants.DEFAULT_EXCHANGE,
-            fibonacciQueueName,
+            FibonacciCalculator.QUEUE_NAME,
             new AMQP.BasicProperties.Builder().replyTo(replyQueue).build(),
             Integer.toString(number).getBytes()
         );
