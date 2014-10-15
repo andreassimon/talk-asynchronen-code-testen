@@ -12,8 +12,8 @@ import java.util.List;
  * From "Growing Object-Oriented Software" by Nat Pryce and Steve Freeman
  */
 public class NotificationTrace<T> {
-    private final Object traceLock = new Object();
-    private final List<T> trace = new ArrayList<T>();
+//    private final Object traceLock = new Object();
+    private final List<T> trace = new ArrayList<>();
     private long timeoutMs = 1000L;
 
     public NotificationTrace(long timeoutMs) {
@@ -29,17 +29,17 @@ public class NotificationTrace<T> {
     }
 
     public void append(T message) {
-        synchronized (traceLock) {
+//        synchronized (traceLock) {
             trace.add(message);
-            traceLock.notifyAll();
-        }
+//            traceLock.notifyAll();
+//        }
     }
 
     public void containsNotification(Matcher<? super T> criteria)
             throws InterruptedException {
         Timeout timeout = new Timeout(timeoutMs);
 
-        synchronized (traceLock) {
+//        synchronized (traceLock) {
             NotificationStream<T> stream = new NotificationStream<>(trace, criteria);
 
             while (!stream.hasMatched()) {
@@ -47,9 +47,9 @@ public class NotificationTrace<T> {
                     throw new AssertionError(failureDescriptionFrom(criteria));
                 }
 
-                timeout.waitOn(traceLock);
+//                timeout.waitOn(traceLock);
             }
-        }
+//        }
     }
 
     private String failureDescriptionFrom(Matcher<? super T> acceptanceCriteria) {
