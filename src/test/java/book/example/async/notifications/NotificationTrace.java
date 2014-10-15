@@ -36,7 +36,7 @@ public class NotificationTrace<T> {
     }
 
     public void containsNotification(Matcher<? super T> criteria)
-            throws InterruptedException {
+            throws AssertionError, InterruptedException {
         Timeout timeout = new Timeout(timeoutMs);
 
 //        synchronized (traceLock) {
