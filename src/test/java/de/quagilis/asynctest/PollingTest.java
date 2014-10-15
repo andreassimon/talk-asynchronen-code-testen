@@ -18,19 +18,19 @@ import static org.junit.Assert.assertThat;
 
 public class PollingTest {
 
-    public static final int MIN = 30;
-    public static final int MAX = 33;
+    public static final int MIN = 20;
+    public static final int MAX = 30;
 
-    public static final int FIB_MIN = 832040;
-    public static final int FIB_MAX = 3524578;
+    public static final int FIB_MIN = 6765;
+    public static final int FIB_MAX = 832040;
 
     public static final String UTF_8 = "UTF-8";
     public static final String FORM_URL_ENCODED = "application/x-www-form-urlencoded;charset=" + UTF_8;
-    public static final long LONG_TIMEOUT = 10000L;
+    public static final long LONG_TIMEOUT = 2000L;
 
 
     @Test public void
-    calculates_fib_30() throws Exception {
+    calculates_fib_20() throws Exception {
         // Act
         HttpURLConnection connection = POST("http://localhost:3000/", MIN);
         String fibLocation = connection.getHeaderField("Location");
@@ -40,7 +40,7 @@ public class PollingTest {
     }
 
     @Test public void
-    calculates_fib_33() throws Exception {
+    calculates_fib_30() throws Exception {
         // Act
         HttpURLConnection connection = POST("http://localhost:3000/", MAX);
         String fibLocation = connection.getHeaderField("Location");
